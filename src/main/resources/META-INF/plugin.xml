@@ -15,4 +15,13 @@
     <applicationListeners>
         <listener class="com.github.hessesian.idleexit.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
     </applicationListeners>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+     on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>IdeaVIM</depends>
+
+    <extensions defaultExtensionNs="IdeaVIM">
+        <vimExtension implementation="com.github.hessesian.idleexit.vim.IdeaVimIdleExitExtension"/>
+    </extensions>
 </idea-plugin>

@@ -13,7 +13,7 @@ import com.github.hessesian.idleexit.services.MyProjectService
 import javax.swing.JButton
 
 
-class MyToolWindowFactory : ToolWindowFactory {
+class MyToolWindowFactory : ToolWindowFactory{
 
     init {
         thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
