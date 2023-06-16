@@ -23,10 +23,9 @@ This specific section is a source for the [plugin.xml](/src/main/resources/META-
 
 To keep everything working, do not remove `<!-- ... -->` sections. 
 <!-- Plugin description end -->
-
 ## Installation
-sasdQ
 - Using IDE built-in plugin system:
+- assdasdsdasdkljasklj
   
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "idleexit"</kbd> >
   <kbd>Install Plugin</kbd>

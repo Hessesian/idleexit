@@ -1,44 +1,51 @@
 package com.github.hessesian.idleexit.vim
 
-import com.intellij.openapi.actionSystem.IdeActions
-import com.intellij.openapi.editor.actionSystem.EditorActionManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.actionSystem.TypedAction
-import com.intellij.util.ui.EDT
 import com.maddyhome.idea.vim.VimTypedActionHandler
-import com.maddyhome.idea.vim.api.injector
 import com.maddyhome.idea.vim.extension.VimExtension
+import com.maddyhome.idea.vim.group.visual.VimVisualTimer
+import com.maddyhome.idea.vim.helper.editorMode
+import com.maddyhome.idea.vim.helper.popAllModes
 import java.util.Timer
 import java.util.TimerTask
+import javax.swing.Timer as STimer
 
 class IdeaVimIdleExitExtension : VimExtension {
   override fun getName(): String {
     return "idle-exit"
   }
 
-  private var timerId: Long = -1
   private var idleTimeout: Int = 600
+  private val logger = Logger.getInstance(this::class.java)
   override fun init() {
+
     val typedAction = TypedAction.getInstance()
-    val timer = Timer()
-    timer.schedule(object : TimerTask() {
+    val initTimer = Timer()
+    initTimer.schedule(object : TimerTask() {
       override fun run() {
         // assign to local val for the type check and smart casting to work properly
         val rawTypedActionHandler = typedAction.rawHandler
         if (rawTypedActionHandler is VimTypedActionHandler) {
+          var timer: STimer? = null
           typedAction.setupRawHandler { editor, charTyped, dataContext ->
             if (editor.isInsertMode) {
-              restartTimer() {
-                if (editor.isInsertMode) {
-                  EDT.getEventDispatchThread().run {
-                    injector.application.runReadAction {
-                      EditorActionManager.getInstance().getActionHandler(IdeActions.ACTION_EDITOR_ESCAPE).execute(editor, dataContext)
-                    }
+              if (timer == null) {
+                timer = STimer(idleTimeout) {
+                    if (editor.isInsertMode) {
+                      VimVisualTimer.singleTask(editor.editorMode) {
+                        editor.popAllModes()
+                      }
                   }
                 }
               }
+              try {
+                timer?.restart()
+              } catch (exc: Exception) {
+                logger.error(exc)
+              }
             }
             rawTypedActionHandler.execute(editor, charTyped, dataContext)
-            timer.cancel()
           }
         }
       }
@@ -50,31 +57,4 @@ class IdeaVimIdleExitExtension : VimExtension {
     super.dispose()
   }
 
-  private fun restartTimer(runnable: Runnable) {
-    stopTimer()
-    timerId = System.currentTimeMillis() + idleTimeout
-
-    Thread {
-      while (System.currentTimeMillis() < timerId) {
-        try {
-          Thread.sleep(50)
-        } catch (e: InterruptedException) {
-          // Handle thread interruption if needed
-          e.printStackTrace()
-        }
-      }
-
-      // Exit insert mode to normal mode after idleTimeout
-      runnable.run()
-    }.start()
-  }
-
-  private fun stopTimer() {
-    timerId = -1
-  }
-
-  private fun exitInsertMode() {
-    // Code to exit insert mode and switch to normal mode
-    // Implement your own logic here
-  }
 }
